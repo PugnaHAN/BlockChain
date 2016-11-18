@@ -54,7 +54,7 @@
     *NOTE*: For the item 4 and 5, you may not find the error message on the log, but without them, you can't build the bitcoin-qt. If you read the log carefully enough, you can see the WARNING message.
 
   - =make=
-    I spent many time on fixing all the issue in this process. For me, I faced some link error of ~undefined reference to boost or protobuf or qt~. Even though I can confirm all the libraries above have been installed, these error still happened. If you have the same issue, don't worry, please follow my steps.
+    I spent much time on fixing all the issue in this process. For me, I faced some link error of ~undefined reference to boost or protobuf or qt~. Even though I can confirm all the libraries above have been installed, these error still happened. If you have the same issue, don't worry, please follow my steps.
     1. Check the latest command before the error, such as =CXXLD *boost*=, if you have the same log, just open the src/Makefile and modified the LDFLAGS to ={LDFLAGS = -L"/usr/local/lib"}=. Re-run and check.
     2. If the same error happened again, follow the steps below:
        #+BEGIN_SRC shell
