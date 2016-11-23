@@ -1,0 +1,26 @@
+#+TITLE: Short introduction of cryptograghy
+#+AUTHORS: Pugna_HAN
+#+EMAILS: justin_victory@hotmail.com
+#+OPTIONS: toc:nil ^:nil
+#+TAGS: @HOME(h) @WORK(w)
+
+In this directory, I will wrote some materials about cryptograghy. However, as I am still learning it, something may be not clear. Anyway, I will try my best to keep it update with my understanding.
+
+* Proposals
+** TODO [#1] Write some materials [0%]                                :@Home:
+   DEADLINE: <2016-12-04 Sun>
+   - [ ] Short histroy of cryptograghy <2016-11-26 Sat>
+   - [ ] Some intreasting algorithm of encryption and decryption <2016-11-27 Sun>
+   - [ ] RSA introduction <2016-11-30 Wed>
+   - [ ] ECC introduction <2016-12-03 Sat>
+   - [ ] Basic knowledge of "Theroy of number" <2016-12-04 Sun>   
+** TODO [#2] Write some code [0%]            :@Home:   
+   - [2/3] Classical code
+     - [X] Caesar
+     - [X] ReplaceChar
+     - [ ] TBD
+   - [0/4] Current
+     - [ ] DES
+     - [ ] AES
+     - [ ] RSA
+     - [ ] ECC
