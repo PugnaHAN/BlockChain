@@ -1,6 +1,6 @@
 #+TITLE: Short introduction of cryptograghy
-#+AUTHORS: Pugna_HAN
-#+EMAILS: justin_victory@hotmail.com
+#+AUTHOR: Pugna_HAN
+#+EMAIL: justin_victory@hotmail.com
 #+OPTIONS: toc:nil ^:nil
 #+TAGS: @HOME(h) @WORK(w)
 

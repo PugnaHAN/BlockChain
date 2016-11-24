@@ -1,0 +1,48 @@
+#+TITLE:RSA introduction
+#+DATE: <2016-11-24 Thu>
+#+AUTHOR: Juhan
+#+EMAIL: justin_victory@hotmail
+#+STARTUP: content
+#+OPTIONS: toc: nil ^:nil
+
+* What is RSA
+  This is an algorithm of encryption which is proposed by Ron Rivest, Adi Shamir, Leonard Adleman in 1977, which is named by the first character of their family name(Rivest, Shamir and Adleman). It is a technic of asymmetric encryption, that means the keys which are used to encrypted and decrypted are different.
+  #+BEGIN_EXAMPLE
+  The basic model of sender and reciever
+  Alice ======send message========> Bob
+                  ||
+                  ||
+                  ||
+                  VV
+                  Eve
+  Alice is the sender, Bob is the reciever, and the Eve is the third party who will attack the net to stole thier message, we call him eavesdropper.
+  Assume if Alice uses the symmetric key to encrypt a plain text, Bob should get the key too. How to send the key to Bob safely is a big trouble through internet because it may be stolen by Eve.
+  #+END_EXAMPLE
+  Based on the above situation, the asymmetric encryption was proposed in 1970s, and RSA was raised up by the three geniouses.
+
+* Basic knowledgement of math
+  Before introduce the RSA, we should have some basic knowledgement of math. Maybe it is boring, but it is necessary to understand the RSA, if you are not intreasted with it, you can just remember the <<conclusion>>.
+** A mod N
+   A,N belongs to Z, if A = a*n + r (r belongs to [0, N)), A mod N = r. For example, we have a clock, there are twelve marks on the pane, from 1 to 12. But to explain mod, we should replace 12 to 0, thus, only 0 - 11 will be displayed on the pane. \\
+   If A mod N = B mod N, we can call them coresidual, marked as A = B mod N. 
+** Prime number
+   If an integer can only separated to 1 multiple itself, we can it prime number. Currently, there is a hard question that is a big number is very hard to separated to a result of two prime number if it can be marked as p * q and both p, q are prime number. This is the foundation of RSA is hard to decrypted without private key.
+** [[conclusion]]
+   1. If p and q are big prime number, p*q is hard to marked to as p*q if p,q are unknown.
+
+* The flows of encryption and decription
+** Encroption
+   1. Pick two large prime number, generally 512 bits, calculate thier product, marked as N = p * q;
+   2. Get the least comman product of (p -1) and (q-1), L = lcm(p - 1, q - 1) which is temparory number;
+   3. Get a number which is prime to L, we call it E, satisfy (E, L) = 1;
+   4. Get cipher: C = P^{E} mod N;
+   Currently, we have four numbers, N, L, E, C. Question, whcih of them are contructed to public key.
+   1. Abviously, the cipher must be released.
+   2. Now we have three candidates, N, L, E.
+      - If the L are released, as L is not a product of two prime number, it will be not complicated to guess the p and q, drop it.
+      - If the E released, we can't indicate the p, q easily. Keep it now.
+      - Based on the conlusion above, N can be released too. Keep it.
+   3. One of the candidates will be dropped later.
+** Decription
+   We have C = P^{E} mod N. If we want to get P, the most obvious way is to get N and E. However, N is large, the P will be obtained for many times, which is not good option to be a private key. 
+
