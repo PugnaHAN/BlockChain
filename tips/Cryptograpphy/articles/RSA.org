@@ -2,12 +2,11 @@
 #+DATE: <2016-11-24 Thu>
 #+AUTHOR: Juhan
 #+EMAIL: justin_victory@hotmail
-#+STARTUP: content
-#+OPTIONS: toc: nil ^:nil
+#+OPTIONS: toc:nil
 
 * What is RSA
   This is an algorithm of encryption which is proposed by Ron Rivest, Adi Shamir, Leonard Adleman in 1977, which is named by the first character of their family name(Rivest, Shamir and Adleman). It is a technic of asymmetric encryption, that means the keys which are used to encrypted and decrypted are different.
-  #+BEGIN_EXAMPLE
+  #+BEGIN_SRC
   The basic model of sender and reciever
   Alice ======send message========> Bob
                   ||
@@ -19,7 +18,7 @@
   Assume if Alice uses the symmetric key to encrypt a plain text, Bob should get the key too. How to send the key to Bob safely is a big trouble through internet because it may be stolen by Eve.
   #+END_EXAMPLE
   Based on the above situation, the asymmetric encryption was proposed in 1970s, and RSA was raised up by the three geniouses.
-
+  
 * Basic knowledgement of math
   Before introduce the RSA, we should have some basic knowledgement of math. Maybe it is boring, but it is necessary to understand the RSA, if you are not intreasted with it, you can just remember the <<conclusion>>.
 ** A mod N
@@ -29,20 +28,36 @@
    If an integer can only separated to 1 multiple itself, we can it prime number. Currently, there is a hard question that is a big number is very hard to separated to a result of two prime number if it can be marked as p * q and both p, q are prime number. This is the foundation of RSA is hard to decrypted without private key.
 ** [[conclusion]]
    1. If p and q are big prime number, p*q is hard to marked to as p*q if p,q are unknown.
-
-* The flows of encryption and decription
-** Encroption
+   2. If p, q are prime, and N = p * q, there are (p -1)(q - 1) numbers are relative prime to N (Eulerr'so totient function)
+   3. If (a, n) = 1, we can get a^{f(n)} = 1 mod n. f(n) represents the amount of numbers (belongs to [1, n)) who are prime to N. It is the most important theory to understand RSA. For example, during the decryption, we have a number ed = 1 mod L, and L = (p - 1)(q - 1). If you want to understand why the process of decryption is right, you should use this theory.
+      
+* The flows of encryption and decryption
+** Encryption
    1. Pick two large prime number, generally 512 bits, calculate thier product, marked as N = p * q;
-   2. Get the least comman product of (p -1) and (q-1), L = lcm(p - 1, q - 1) which is temparory number;
+   2. L = (p - 1) * (q - 1)
    3. Get a number which is prime to L, we call it E, satisfy (E, L) = 1;
    4. Get cipher: C = P^{E} mod N;
    Currently, we have four numbers, N, L, E, C. Question, whcih of them are contructed to public key.
    1. Abviously, the cipher must be released.
    2. Now we have three candidates, N, L, E.
       - If the L are released, as L is not a product of two prime number, it will be not complicated to guess the p and q, drop it.
-      - If the E released, we can't indicate the p, q easily. Keep it now.
-      - Based on the conlusion above, N can be released too. Keep it.
-   3. One of the candidates will be dropped later.
-** Decription
-   We have C = P^{E} mod N. If we want to get P, the most obvious way is to get N and E. However, N is large, the P will be obtained for many times, which is not good option to be a private key. 
+      - The N,E will be set as the public key to be released.
+** Decryption
+   We have C = P^{E} mod N. If we want to get P, the most obvious way is to get N and E. However, N is large, the P will be obtained for many times, which is not good option to be a private key. The decription method of RSA is:
+   #+BEGIN_EXAMPLE
+   P = C^{D} mod N - (1)
+   D is a number which satisfy L | (ED - 1), alternatively, we can write it as ED = 1 mod L
+   #+END_EXAMPLE
+   We can prove that if we get C with N and D, we can use (1) to get the plain text. However, the proof process is complicated, if you are interested in it, please refer [[https://crypto.stackexchange.com/questions/2884/rsa-proof-of-correctness][RSA proof of correctness]].
+   
+** Example
+   For example, we have a number 21 to be encrypted.
+   1. Encryption
+      - Pick two prime number, assume 11 and 17, thus the N = 11 x 17 = 187
+      - L = 10 x 16 = 160
+      - Pick a number E, set E = 7
+      - C = 21^{7} mod 187 = ((21^{2} mod 187)(21^{2} mod 187)(21^{2} mod 187)(21 mod 187)) mod 187 = ((441 mod 187)(441 mod 187)(441 mod 187) * 21) mod 187 = (67^{3} * 21) mod 187 = ((4489 mod 187) * (1407 mod 187)) mod 187 = (168 * 118) mod 187 = 98
 
+   2. Decryption
+      - Get the D, as E = 7, L = 160, base on the ED = 1 mod 160, we can get a number D = 23, 23 * 7 = 161 mod 160 = 1 mod 160
+      - P = 98^{23} mod 187 = (98 mod 187)*((98^{2} mod 187)^{11}) mod 187 = (98 * 67 * (67 x 67 mod 187)^{5}) mod 187 = 21
