@@ -12,11 +12,11 @@
   Before debug the bitcoin, you should make sure the gcc/g++/gdb have been installed on your system. =sudo apt-get install build-enssiential= may help you if you don't install it yet.
 
 * Build the bitcoin
-  Refer my another [[../bitcoin/build/How to build bitcoin on Win10 subsystem.org][document]]. Make sure you have turn on the =-g= flag on configre.ac(it's on by default.). You can check the value of CXXFLAGS and CFLAGS on bitcoin/src/Makefile to confirm if you have turn it on or off. If not, just add =-g -ggdb= to CFLAGS and CXXFLAGS in Makefile.
+  Refer my another [[file:../bitcoin/build/"How to build bitcoin on Win10 subsystem.org"][document]]. Make sure you have turn on the =-g= flag on configre.ac(it's on by default.). You can check the value of CXXFLAGS and CFLAGS on bitcoin/src/Makefile to confirm if you have turn it on or off. If not, just add =-g -ggdb= to CFLAGS and CXXFLAGS in Makefile.
 
 * Debug your bitcoin
   Open your emacs, and press =Alt-x= (=M-x= M means meta), enter gdb. Then change the file path to your bitcoind or bitcoin-cli, shown below: \\
-  [[image/bitcoin-cli_debug.png][Picture 1. Change the path]]\\
+  [[image/bitcoin-cli_debug.png][Picture 1. Change the path]] \\
   Then, you can see the interface like this \\
   [[image/gdb-many-windows.png][Picture 2. Screenshot of gdb of emacs]] \\
 
