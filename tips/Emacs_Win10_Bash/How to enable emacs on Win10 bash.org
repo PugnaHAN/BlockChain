@@ -1,7 +1,11 @@
 #+TITLE: Use the Graphic emacs on bash
+#+OPTIONS: toc:nil
+
 * The preview of the result
   The screenshot of emacs is shown below:
-  [[file:/mnt/c/Users/Juhan/Desktop/Emacs_Win10_Bash/images/screeenshot_emacs.png][Screen shot of Emacs]]
+  #+CAPTION: Screenshot of emacs on Win10 subsystem
+  #+ATTR_HTML: :alt cat/spider image :title emacs :align center
+  [[file:images/screenshot_emacs.png]]
 
 * Detail steps
 ** The concept of win10 subsystem
@@ -62,8 +66,10 @@
          =sudo mkfontscale=  #/Optional/
          =sudo fc-cache=     #/Required/
        - Copy the font directory to %PATH_TO_XMANAGER%/Fonts
-       - Add the font directory for Xmanager
-         [[file://c:/Users/Juhan/Desktop/Emacs_Win10_Bash/images/screenshot_fonts.png][Screenshot of adding font dir]]
+       - Add the font directory for Xmanager \\
+         #+CAPTION: Screenshot of adding font dir
+         #+ATTR_HTML: :alt cat/spider image :title Screenshot :align center
+         [[file:images/screenshot_fonts.png]]
     3. Restart the emacs by using /DISPLAY=:0 emacs/
 *** Configure the frame size
     I spent many time on fixing this issue because I have no idea about X11 system. If you are farmiliar with it, it is easy for you.
@@ -76,7 +82,7 @@
      So I think I should found the confgiruation file for emacs. Then I baidu and bing it and found that how to resize emacs with two methods:
      - modified the ~/.Xdefaults
      - Use the elisp to modified it(I tried it many times, invalid)
-     I used the first method and succeed!
+     I used the first method and succeed!\\
      [[http://my.oschina.net/u/1186777/blog/147488][Two methods to change initial size of emacs]]
 * Enjoy your emacs!!!
        

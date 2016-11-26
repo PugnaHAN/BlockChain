@@ -40,9 +40,9 @@
        If your ubuntu was healthy, the qt issue could be fixed temporary. Why it is temporary, I will tell you in the next section. For me, a lot of dependencies issue of QT occured because I used dpkg to install some incompitable version. If you have the same issue, please use =sudo apt-get -f install= to fix it.
     3. *libboost* (>=1.47)
        As bitcoin relied on boost library, it is mandantory. For most ubuntu system with right source.list, you can use the =sudo apt-get install libboost-version= to install it correctly. However, somebody would be unlucky like me, we should download the source code and compile it ourselves.
-       If you have the same issue, just download the source code from [[www.boost.org][Boost website]] and follow the instruction in the document to install it.
+       If you have the same issue, just download the source code from [[http://www.boost.org][Boost website]] and follow the instruction in the document to install it.
     4. *libzmq* (>4.0)
-       Unfortunately, I can't find the libzmq4.x through apt-get, we should download the source code and install it ourselves. Please go to the page of [[zeromq.org][ZeroMQ website]] and download the source code. Follow the instruction of INSTALL to install this lib.
+       Unfortunately, I can't find the libzmq4.x through apt-get, we should download the source code and install it ourselves. Please go to the page of [[http://zeromq.org][ZeroMQ website]] and download the source code. Follow the instruction of INSTALL to install this lib.
     5. *protobuf*
        #+BEGIN_SRC shell
        git clone https://github.com/google/protobuf.git
@@ -70,4 +70,5 @@
     No problems yet.
 * Preview of bitcoin-qt
   #+CAPTION: preview of bitcoin
-  [[image/bitcoin1.png][Picture 1. UI of bitcoin-qt]]
+  #+ATTR_HTML: :alt image :title bitcoin-qt :align center
+  [[file:image/bitcoin1.png]]

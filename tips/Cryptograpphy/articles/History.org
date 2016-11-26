@@ -70,12 +70,12 @@
 *** Feistel network
     Before introduce the DES, Feistel network should be known first. It is proposed by Horst Feistel of IBM in the Lucifer Cipher. \\
     #+CAPTION: One turn of encryption in Feistel network
-    #+ATTR_HTML: :alt cat/spider image:title Action! :align center
+    #+ATTR_HTML: :alt cat/spider image :title Action! :align center
     [[file:images/feistel-encryption.png]]
 
     After you get the cipher, just run the Feistel again with the same key by reverse loop, you can get the plain text whatever the wheel function is. \\
     #+CAPTION: One turn of decryption in Feistel network
-    #+ATTR_HTML: :alt cat/spider image:title Action! :align center
+    #+ATTR_HTML: :alt cat/spider image :title Action! :align center
     [[file:images/feistel-decryption.png]]
    
 *** TODO DES
