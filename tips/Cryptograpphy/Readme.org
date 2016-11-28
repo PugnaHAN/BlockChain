@@ -7,9 +7,9 @@
 In this directory, I will wrote some materials about cryptograghy. However, as I am still learning it, something may be not clear. Anyway, I will try my best to keep it update with my understanding.
 
 * Proposals
-** TODO [#1] Write some materials [20%]                               :@Home:
+** TODO [#1] Write some materials [40%]                               :@Home:
    DEADLINE: <2016-12-04 Sun>
-   - [ ] Short histroy of cryptograghy <2016-11-26 Sat>
+   - [X] Short histroy of cryptograghy <2016-11-26 Sat>
    - [ ] Some intreasting algorithm of encryption and decryption <2016-11-27 Sun>
    - [X] RSA introduction <2016-11-30 Wed>
    - [ ] ECC introduction <2016-12-03 Sat>

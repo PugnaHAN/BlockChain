@@ -6,7 +6,7 @@
 
 * What is RSA
   This is an algorithm of encryption which is proposed by Ron Rivest, Adi Shamir, Leonard Adleman in 1977, which is named by the first character of their family name(Rivest, Shamir and Adleman). It is a technic of asymmetric encryption, that means the keys which are used to encrypted and decrypted are different.
-  #+BEGIN_SRC
+  #+BEGIN_EXAMPLE
   The basic model of sender and reciever
   Alice ======send message========> Bob
                   ||
