@@ -17,12 +17,12 @@
 - *子群的秩n* ；
 - *子群因子h* ;
 
-总之，我们算法的 *范围参数* 是一个 *六元的元组* $$(p, a, b, G, n, h)$$ 。
+总之，我们算法的 *范围参数* 是一个 *六元的元组* \((p, a, b, G, n, h)\) 。
 
 * 随机曲线
-当我提及到离散对数问题“难”解时，我并非完全正确。其实，有 *一些椭圆曲线依然很不安全* ，他们会被某些特殊的算法再多项式时间内有效破解。比如说，所有满足p = hn(即，椭圆曲线的秩与有限域的秩相同)的椭圆曲线都容易被[[http://interact.sagemath.org/edu/2010/414/projects/novotney.pdf][Smart攻击]] ，该算法使得传统计算机能够再多项式时间内破解离散对数问题。
+当我提及到离散对数问题“难”解时，并非完全正确。其实，有 *一些椭圆曲线依然很不安全* ，他们会被某些特殊的算法再多项式时间内有效破解。比如说，所有满足\(p = hn\)(即，椭圆曲线的秩与有限域的秩相同)的椭圆曲线都容易被[[http://interact.sagemath.org/edu/2010/414/projects/novotney.pdf][Smart攻击]] ，该算法使得传统计算机能够再多项式时间内破解离散对数问题。
 
-假设我把一个给定范围参数的椭圆曲线给你，也可能存在我已经发现该曲线弱点并有有效算法破解该曲线的可能性，而其他人不知晓该曲线的弱点。因此，我如何才能使得你相信该曲线的安全性，比如让你相信我不知晓任何弱点？ *我如何才能向你保证该曲线是“安全”(我不可能居心叵测地用某些特殊办法攻击该密码)？* 
+假设我把一个给定范围参数的椭圆曲线给你，存在我已经发现该曲线弱点并有有效算法破解该曲线的可能性，而其他人不知晓该曲线的弱点。因此，我如何才能使得你相信该曲线的安全性，比如让你相信我不知晓任何弱点？ *我如何才能向你保证该曲线是“安全”(我不可能居心叵测地用某些特殊办法攻击该密码)？* 
 
 为了解决上述问题，有时候一个新的范围参数是有必要的： *种子S* 。这是一个用来生成系数a,b或基点G，或其二者的随机数。这些参数都通过种子S的哈希数来计算。而哈希算法，我们知道，是一种”容易“计算而“难以”逆向的算法。
 
@@ -40,35 +40,35 @@
 
 一个用来生成和箴言随机去先的算法再ANSI X9.62中有详细描述，其基础是[[https://en.wikipedia.org/wiki/SHA-1][SHA-1]] 算法。 如果你有兴趣，可以去读读生成严格随机曲线的算法——[[http://www.secg.org/sec1-v2.pdf][SECG]] 。(寻找“严格随机和基点”)。
 
-我写了一个小的[[https://github.com/andreacorbellini/ecc/blob/master/scripts/verifyrandom.py][Python 脚本]] *来验证结合 [[https://github.com/openssl/openssl/blob/81fc390/crypto/ec/ec_curve.c][OpenSSL]] 生成的随机曲线*。我强烈推荐你去读一读。
+我写了一个小的[[https://github.com/andreacorbellini/ecc/blob/master/scripts/verifyrandom.py][Python 脚本]] *来验证结合[[https://github.com/openssl/openssl/blob/81fc390/crypto/ec/ec_curve.c][OpenSSL]] 生成的随机曲线* 。 我强烈推荐你去读一读。
 
 * 椭圆曲线密码学
 终于，虽然花了好久，不过我们还是到了最关键的地方！OK，接下来我们开门见山:
-1. *私钥* 是一个从/[{ 1, 2, ..., n - 1 } /] 中随机抽取的整数d(n为子群的秩)。
-2. *公钥* 是一个点满足 /[ H = dG /] (G为子群的基点)。
+1. *私钥* 是一个从 \( \{ 1, 2, ..., n - 1 \} \) 中随机抽取的整数d(n为子群的秩)。
+2. *公钥* 是一个点满足 \( H = dG \) (G为子群的基点)。
 
 明白了不？如果我们知道d和G(当然，其他参数也是已知的)， 要找到H是相对“简单”的。但是，如果我们知道H和G， *计算私钥d是很“困难”的，因为我们有必要解决离散对数问题* 。
 
 接下来，我们要介绍下两种公钥的生成算法ECDH(Elliptic curve Diffie-Hellman)，通常被用来加密；和ECDSA(Elliptic Curve Digitial Signature Algorithm)， 一般用来做数字签名。
 
 * 使用ECDH加密
-ECDH是[[https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange][Diffie-Hellman 算法]]的一个变体。实际上，它更像一个[[https://en.wikipedia.org/wiki/Key-agreement_protocol][密钥配对协议]](key-agreement protocol)而非加密算法。这表明ECDHECDH定义了(对于一些扩展来说)如何生成密钥并在不同组织之间传递。而实际上如何去堆这些密钥加密则取决于我们。
+ECDH是[[https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange][Diffie-Hellman 算法]]的一个变体。实际上，它更像一个[[https://en.wikipedia.org/wiki/Key-agreement_protocol][密钥配对协议]](key-agreement protocol)而非加密算法。这表明ECDH定义了(对于一些扩展来说)如何生成密钥并在不同组织之间传递。而实际上如何去堆这些密钥加密则取决于我们。
 
 ECDH解决的问题如下：两个组织(通常是[[http://en.wikipedia.org/wiki/Alice_and_Bob][Alice和Bob]])想要秘密地通信，而第三方([[http://en.wikipedia.org/wiki/Man-in-the-middle_attack][中间人]])可以截获这些信息但不能解密。这便是TLS背后的逻辑，请看下面的例子。
 
 如何工作：
-1. 首先， *Alice和Bob生成了他们自己的公钥和私钥*。我们有给Alice的私钥d_{A}和公钥H_A = d_{A}G和给Bob的d_{B}和H_{B} = d_{B}G。我们注意到Alice和Bob都使用相同的范围参数：相同的基点，基于相同的有限域的椭圆曲线。
+1. 首先， *Alice和Bob生成了他们自己的公钥和私钥* 。我们有给Alice的私钥\(d_{A}\)和公钥\(H_A = d_{A}G\)和给Bob的\(d_{B}\)和\( H_{B} = d_{B}G \)。我们注意到Alice和Bob都使用相同的范围参数：相同的基点，基于相同的有限域的椭圆曲线。
 2. *Alice和Bob在非加密信道上相互交换他们的公钥H_{A}和H_{B}* 。然后中间人可能截获H_{A}和H_{B}，但是却并没有办法计算出d_{A}和d_{B}，在没有解决离散对数问题的情况下。
-3. *Alice计算S = d_{A}H_{B}(使用他们他自己的私钥和Bob的公钥)，而Bob计算出S=d_{B}H_{A}(用他的私钥和Alice的公钥)。我们可以发现最后Alice和Bob最后得到的S都是相同的：\\
-/[ S = d_{A}H_{B} = d_{A}(d_{B}G) = d_{B}(d_{A}G) = d_{B}H_{A} /]
+3. *Alice计算\(S = d_{A}H_{B}\)(使用他们他自己的私钥和Bob的公钥)，而Bob计算出\(S=d_{B}H_{A}\)(用他的私钥和Alice的公钥)* 。我们可以发现最后Alice和Bob最后得到的S都是相同的：\\
+\[ S = d_{A}H_{B} = d_{A}(d_{B}G) = d_{B}(d_{A}G) = d_{B}H_{A} \]
 
-而中间人却只知道H_{A}和H_{B}和其他的范围参数，无法计算出其他人 *共享的信息S* 。这便是Diffie-Hellman问题，可以用下文来描述：
+而中间人却只知道\(H_{A}\)和\(H_{B}\)和其他的范围参数，无法计算出其他人 *共享的信息S* 。这便是Diffie-Hellman问题，可以用下文来描述：
 #+BEGIN_QUOTE
-Given three points P, aP and bP, what is the result of abP? (已知三个点P、aP和bP，abP的值是多少？)
+Given three points \(P\), \(aP\) and \(bP\), what is the result of \(abP\)? (已知三个点\(P\)、\(aP\)和\(bP\)，\(abP\)的值是多少？)
 #+END_QUOTE
 或者等价的：
 #+BEGIN_QUOTE
-Given three integers k, k^{x} and k^{y}, what is the result of k^{xy}? (已知三个整数k, k^{x}和k{y}，k^{xy}的值是多少？
+Given three integers \(k\), \(k^{x}\) and \(k^{y}\), what is the result of \(k^{xy}\)? (已知三个整数\(k\), \(k^{x}\)和\(k^{y}\)，\(k^{xy}\)的值是多少？
 #+END_QUOTE
 
 (下图用来介绍原本的Diffie-Hellman算法，基于模数计算)。
@@ -86,7 +86,7 @@ Diffie-Hellman在椭圆曲线上的问题通常被认为是“难”解的问题
 比如，他们可以使用S的横坐标x来作为[[https://en.wikipedia.org/wiki/Triple_DES][3DES]] 或者[[https://en.wikipedia.org/wiki/Advanced_Encryption_Standard][AES]] 来加密信息。这其实就是TLS差不多做的，其区别是TLS将x坐标同其他数字链接起来兵结算这些比特字符串的哈希值。
 
 ** Playing with ECDH
-我写了另外一个[[https://github.com/andreacorbellini/ecc/blob/master/scripts/ecdhe.py][Python 脚本]]来 *计算在同一椭圆曲线上的公私钥和共享密钥*。
+我写了另外一个[[https://github.com/andreacorbellini/ecc/blob/master/scripts/ecdhe.py][Python 脚本]]来 *计算在同一椭圆曲线上的公私钥和共享密钥* 。
 
 和我们目前所见的其他例子不同，这个脚本我们使用了标准的曲线而不是小范围有限域的简单曲线。我选择的曲线是 =secp256k1= ，来自于[[http://www.secg.org/][SEGC]]("Standards for Efficient Cryptography Group", 由[[https://www.certicom.com/][Certicom]] 创立)。该曲线同样被[[https://en.bitcoin.it/wiki/Secp256k1][Bitcoin]] 用来当作数字签名。这里是一些范围参数：
 - p = 0xffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fffffffe fffffc2f
@@ -121,14 +121,14 @@ Shared secret: (0x3e2ffbc3aa8a2836c1689e55cd169ba638b58a3a18803fcf7de153525b28c3
 
 再次声明，Alice和Bob使用相同的范围参数。我们接下来见到的算法是ECDSA，由[[https://en.wikipedia.org/wiki/Digital_Signature_Algorithm][数字签名算法]] 基于椭圆曲线变种而来。
 
-ECDSA是在信息的hash值的基础上进行计算的，而不是信息本身。Hash函数的选择则由我们自身来确定，不过很显然[[http://en.wikipedia.org/wiki/Cryptographic_hash_function][cryptographically-secure 哈希函数]]是可以使用的。 *信息的哈希值应该是被缩短的* ，因此hash的比特长度一定和n(子群的秩)的比特长度是相同的。*缩短的hash值是一个整数，我们用z来表示*。
+ECDSA是在信息的hash值的基础上进行计算的，而不是信息本身。Hash函数的选择则由我们自身来确定，不过很显然[[http://en.wikipedia.org/wiki/Cryptographic_hash_function][cryptographically-secure 哈希函数]]是可以使用的。 *信息的哈希值应该是被缩短的* ，因此hash的比特长度一定和n(子群的秩)的比特长度是相同的。 *缩短的hash值是一个整数，我们用z来表示* 。
 
 Alice签名信息的步骤如下：
 1. 随机选取一个整数k，k属于{1, ..., n}(n为子群的秩)；
-2. 计算点P = kG(G为子群的基点)；
-3. 计算数字r = x_{P} mod n(x_{P}是P的横坐标)；
+2. 计算点\(P = kG\)(G为子群的基点)；
+3. 计算数字\(r = x_{P}\bmod n\)(x_{P}是P的横坐标)；
 4. 如果r = 0, 重新选取k，重复以上步骤；
-5. 计算s = k^{-1}(z + rd_{A}) mod n (d_{A}是Alice的私钥而k^{-1}是k的乘法逆元, mod n下的)
+5. 计算\(s = k^{-1}(z + rd_{A})\bmod n\) (d_{A}是Alice的私钥而k^{-1}是k的乘法逆元, mod n下的)
 6. 若s == 0, 重复以上所有步骤；
    
 (r, s)对便是 *签名* 。
@@ -137,38 +137,38 @@ Alice签名信息的步骤如下：
 #+ATTR_HTML: :alt image :title ECDSA :align center
 [[file:images/ecdsa.png]]
 
-用文字来描述，该算法首先生成一个密钥(k)。由于点乘法h被隐藏在r中（我们知道，正向计算相对“容易”， 反向“困难”）。r然后则通过等式 \[ s = k^{-1}(z + rd_{A}) mod n\]。
+用文字来描述，该算法首先生成一个密钥(k)。由于点乘法h被隐藏在r中（我们知道，正向计算相对“容易”， 反向“困难”）。r然后则通过等式 \( s = k^{-1}(z + rd_{A}) \bmod n\)。
 
 注意到，为了计算s，我们要计算k在mod n的有限域下的乘法逆元。我们在[[http://andrea.corbellini.name/2015/05/23/elliptic-curve-cryptography-finite-fields-and-discrete-logarithms/#p-must-be-prime][上一篇文章所已经说过]] 只有n为素数的时候才能保证所有元素有逆元。 *如果子群的秩不是素数， ECDSA则无法使用* 。因此，几乎所有的标准曲线都拥有素数的秩并非巧合，而那些非素数秩的曲线是不能适用于ECDSA的。
 
 ** 验证签名
 为了验证签名，我们需要Alice的公钥H_{A}，哈希值(压缩过的)z和签名(r,s)。
-1. 计算整数 \[u_{1} = s^{-1}z \bmod n\]。
-2. 计算整数 \[u_{2} = s^{-1}r\bmod n\]。
-3. 计算点\[P = u_{1}G + u_{2}H_{A}\]。
+1. 计算整数 \(u_{1} = s^{-1}z \bmod n\)。
+2. 计算整数 \(u_{2} = s^{-1}r\bmod n\)。
+3. 计算点\(P = u_{1}G + u_{2}H_{A}\)。
 
-该签名只有当r = x_P mod n时有效。
+该签名只有当\(r = x_P\bmod n\)时有效。
 
 ** 算法的正确性
 算法的逻辑似乎并不够明朗，不过当我们把所有的等式都放在一起时，一切都显而易见。
 
-首先从\[ P = u_{1}G + u_{2}H_{A} \]开始。我们知道，从公钥的定义来看，\[ H_{A} = d_{A}G \](d_{A}是私钥)。我们可以得出：
-\[
-P = u_{1}G + u_{2}H_{A}
-  = u_{1}G + u_{2}d_{A}G
-  = (u_{1} + u_{2}d_{A})G
-\]
+首先从\( P = u_{1}G + u_{2}H_{A} \)开始。我们知道，从公钥的定义来看，\( H_{A} = d_{A}G \)(d_{A}是私钥)。我们可以得出：
+\begin{array}{rl}
+  P & = u_1 G + u_2 H_A \\
+  & = u_1 G + u_2 d_A G \\
+  & = (u_1 + u_2 d_A) G
+\end{array}
 
 将u_{1}和u_{2}的定义代入得：
-\[
-P = (u_{1} + u_{2}d_{A})G
-  = (s^{-1}z + s^{-1}rd_{A})G
-  = s^{-1}(z + rd_{A})G
-\]
+\begin{array}{rl}
+  P & = (u_1 + u_2 d_A) G \\
+  & = (s^{-1} z + s^{-1} r d_A) G \\
+  & = s^{-1} (z + r d_A) G
+\end{array}
 
 在这里我们忽略了“mod n”，因为循环子群是由G生成且秩为n，因此“mod n”是多余的。
 
-之前我们定义了\[ s = k^{-1}(z + rd_{A}) \bmod n \]。两边同时乘以k并除以s，得到：\[ k = s^{-1}(z + rd_{A})\bmod n \]。再P等式中代入该结果：
+之前我们定义了\( s = k^{-1}(z + rd_{A}) \bmod n \)。两边同时乘以k并除以s，得到：\( k = s^{-1}(z + rd_{A})\bmod n \)。再P等式中代入该结果：
 \[
 P = s^{-1}(z + rd_{A})G = kG
 \]
@@ -207,12 +207,10 @@ Verification: invalid signature
 
 在这种情况下，我们可以通过购买两个相同签名的游戏来简单地获取Sony的密钥d_{S}，提取他们的哈希值(z_{1} 和 z_{2}) 和签名((r_{1}, s_{1})和(r_{2}, s_{2}))，加上其他范围参数。接下来便是如何破解：
 
-- 首先，注意到$ r_{1} = r_{2} $(因为r = x_{P} mod n, 而 P = kG 对于两个签名来说都是一致的)
-- \[ (s_{1} - s_{2}) mod n = k^{-1}(z_{1} - z_{2}) mod n \] (该结论很容易通过s的等式得出)
-- 计算两边与k的乘积：
-  #+ATTR_LATEX: :algin left
-  $$ k(s_{1} - s_{2}) mod n = (z_{1} - z_{2}) mod n $$;
-- 两边同时除以\[ (s_{1} - s_{2}) \]： \[ k = (z_{1} - z_{2})(s_{1} - s_{2})^{-1} mod n \]
+- 首先，注意到\( r_{1} = r_{2} \)(因为\(r = x_{P} \bmod n\), 而 \(P = kG\) 对于两个签名来说都是一致的)
+- \( (s_{1} - s_{2}) \bmod n = k^{-1}(z_{1} - z_{2}) \bmod n \) (该结论很容易通过s的等式得出)
+- 计算两边与k的乘积：\( k(s_{1} - s_{2}) \bmod n = (z_{1} - z_{2}) \bmod n \);
+- 两边同时除以\( (s_{1} - s_{2}) \)： \( k = (z_{1} - z_{2})(s_{1} - s_{2})^{-1} \bmod n \)
 
 最后一个等式是我们可以仅仅通过两个哈希值和相应的签名便获取到k。现在，我们将使用s的等式来计算私钥：\\
 \[ s = k^{-1}(z + rd_{s}) \Rightarrow d_{S} = r^{-1}(sk - z)\bmod n \]
