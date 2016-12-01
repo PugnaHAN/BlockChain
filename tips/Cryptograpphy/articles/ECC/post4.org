@@ -1,0 +1,232 @@
+#+TITLE: 椭圆曲线密码学：破坏安全性与RSA的对比
+#+AUTHOR: PugnaHAN
+#+EMAIL: justin_victory@hotmail
+#+DATE: <2016-12-01 周四>
+#+STARTUP: latexpreview indent
+#+OPTIONS: toc:nil
+
+本文是该系列的第四篇也是最后一篇，[[http://andrea.corbellini.name/2015/05/17/elliptic-curve-cryptography-a-gentle-introduction/][ECC:一个通俗的介绍]]。
+
+在上一篇文章中我们介绍了两个算法，ECDH和ECDSA，并且我们也知道了椭圆曲线的离散对数难题在其安全性中扮演的重要角色。不过，如果你还记得，我们说过[[http://andrea.corbellini.name/2015/05/23/elliptic-curve-cryptography-finite-fields-and-discrete-logarithms/#discrete-logarithm][并没有严格的数学证明]] 来证实其复杂程度：我们认为它是“复杂难解”的，但是并不能保证。在本文的开头，我们将尝试一下使用今天的技术来看看其到底有多“困难”。
+
+然后，在第二部分，我们会回答一个问题：为什么在RSA(另外一种基于模数运算的加密算法)效果还不错的情况下还依然需要椭圆曲线密码学？
+
+* 破解离散对数
+  接下来我们会看到两个主要用来计算椭圆曲线离散对数问题的有效算法：baby-step,giant step算法和Pollard's rho方法。
+
+  在开始之前，我们回顾下离散对数难题的定义： *对于给定两个点\(P\), \(Q\)，找到\(x\)使得等式\(Q = xP\)成立* 。该点属于椭圆曲线的基点为\(G\)且秩为\(n\)的子群。
+
+** Baby-step, giant step 
+   在了解该算法的详细内容前，我们先快速地思考一个问题：我们总能写出满足表达式\(x = am + b\)的\(x\)，其\(a\),\(m\)和\(b\)为三个任意的整数。比如说我们可以写出表达式：\(10 = 2\cdot3 + 4\)。
+
+   带着这个想法，我们能把离散对数难题等式重新变化一下：\\
+   \begin{array}{rl}
+   Q & = xP \\
+   Q & = (am + b) P \\
+   Q & = am P + b P \\
+   Q - am P & = b P
+   \end{array}
+   Baby-step, giant-step是一种"meeting in the middle"算法。与暴力(brute-force)攻击不同(依次尝试所有\(x\)计算\(xP\)直到找到点\(Q\))， 我们将计算“很少”的\(bP\)值和“很少”的\(Q - amP\)值直到我们找到符合条件的点。该算法的步骤如下：
+   1. 计算\(m = \left\lceil{\sqrt{n}}\right\rceil\);
+   2. 对于每个在\({0, \dots, m}\)的\(b\)，计算\(bP\)并将其值放置在一个哈希表中；
+   3. 对于每个再\({0, \dots, m}\)的\(a\)：
+      1) 计算\(amP\);
+      2) 计算\(Q - amP\);
+      3) 检查哈希表中看看是否存在一个点\(bP\)使得\(Q - amP = bP\)；
+      4) 如果这个点存在，找出\(x = am + b\)；
+   和你所见到的一样，一开始我们也只能逐渐慢慢递增系数\(b\)(像“ *baby* ”一样)来计算点\(bP\)而得到\(b(1P, 2P, 3P, \dots)\)。然后，在算法的第二部分，我们将计算点\(amP\)，不过每次的递增将大步增加到\(am(1mP, 2mP, 3mP, \dots)\)，其\(m\)是一个很大的数。
+   #+CAPTION: Baby-step, giant step算法： 刚开始通过计算小步增长计算很少的点兵将其存再哈希表中。然后我们将大幅增加递增变量兵对比其与哈希表中的值。当获得匹配时，计算离散对数便只是重组数据的问题了。
+   #+ATTR_HTML: :alt image :title baby-step, giant-step :align
+   [[file:images/baby-step-giant-step.gif]]
+
+   为了理解为什么该算法有效，请暂时忽略\(bP\)被缓存并关注等式\(Q = amP + bP\)。思考下面问题：
+   - 当\(a = 0\)时，我们检查\(Q\)与\(bP\)是否相等(\(b\)是0到\(m\))的一个整数。我们相当于对比\(Q\)与(\0P\)到\(mP\)的值。
+   - 当\(a = 1\)时，我们检查\(Q\)与\(mP + bP\)是否相。我们相当于对比\(Q\)与\(mp\)到\(2mP\)的所有点。
+   - \(\dots\)
+   - 当\(a = m - 1\)时， 我们相当于对比\((m-1)P\)到\(m^2 P = nP\)的所有值。
+
+   总之， *我们最多进行了\(2m\)次加法和乘法* (准确来说是\(m\)次的baby-step和最多m次的giant-step)的对比便 *检查了所有\(0P\)到\(nP\)* （这便是所有的可能点）。
+
+   如果认为查找哈希表的时间复杂度是\(O(1)\)（常数时间），那么可以很轻松地计算出其 *时间和空间复杂度* \(O(\sqrt{n})\)（或者说是\(O(2^{k/2}))\)，k为比特长度）。其依然为指数时间，不过已经比暴力破解好了很多。
+
+*** 实际使用Baby-step giant-step
+   这将会使我们对复杂度\(O(\sqrt{n})\)在实际操作中有一个认识。我们考虑标准曲线： =prime192v1= （也就是 =secp192r1=, =ansiX9p192r1= ）。该曲线的秩为 \(n\) = 0xffffffff ffffffff ffffffff 99def836 146bc9b1 b4d22831。其\(n\)开方根大约是7.922816251426434 · 10^{28}（大约为 *eighty octilions* (我已经翻译不出是多少了))
+
+   想象下\(\sqrt{n}\)个数据被存储再一个哈希表中。假如每个点需要32字节： *那么我们的哈希表将需要差不多2.5·10^{30}字节大小的存储空间* 。[[http://www.csc.com/big_data/flxwd/83638-big_data_just_beginning_to_explode_interactive_infographic][在网络上]]， 所有的数据容量加起来差不多在zettabyte(10^21)数量级，整整比我们的哈希表所需要的少了 *十个数量级* 。就算我们的每个点只需要1字节，我们也远远没有足够多容量来存储这些数据。
+
+   这的确让人震惊，不过更令人印象深刻的是 =prime192v1= 只是拥有最低阶的曲线之一。 =secp512r1= （另外一个来自NIST的标准曲线）的秩接近6.9·10^{156}。
+
+*** 尝试baby-step giant-step
+   我写了一个使用baby-step giant-step算法计算离散对数问题的[[https://github.com/andreacorbellini/ecc/blob/master/logs/babygiantstep.py][Python脚本]]。 很显然，只能在拥有小秩的曲线上工作，千万别尝试用它破解 =scp512r1= ，除非你想得到一个 =MemoryError= 的结果。
+
+   运行上面的脚本会得到一个类似下面的输出结果：
+   #+BEGIN_EXAMPLE
+   Curve: y^2 = (x^3 + 1x - 1) mod 10177
+   Curve order: 10331
+   p = (0x1, 0x1)
+   q = (0x1a28, 0x8fb)
+   325 * p = q
+   log(p, q) = 325
+   Took 105 steps
+   #+END_EXAMPLE
+
+** Pollard's \( \rho \)
+   Pollard's rho 是另外一个用来计算离散对数难题的算法。与前一个算法一样，它也有接近\(O(\sqrt{n})\)的时间复杂度，不过其空间复杂度仅仅为\(O(1)\)。如果baby-step giant-step算法是因为内存问题而无法解决离散对数难题，那么Pollard's rho表现如何呢？ 让我们拭目以待……
+
+   首先，关于离散对数要再次提醒一下： 给定\(P\),\(Q\)，计算\(x\)使得等式\(Q = xP\)成立。使用Pollard's rho算法，我们将解决另外一个不同的问题：给定\(P\), \(Q\)，找到整数\(a\), \(b\), \(A\)和\(B\)使得等式\(aP + bQ = AP + BQ\)。
+
+   当这四个整数值被确定时，我们便可以使用等式\(Q = xP\)来计算\(x\)：\\
+   \begin{array}{rl}
+   aP + bQ & = AP + BQ \\
+   aP + bxP & = AP + BxP \\
+   (a + bx) P & = (A + Bx) P \\
+   (a - A) P & = (B - b) xP
+   \end{array}
+
+   此时我们可以消去\(P\)。不过在此之前，请记住我们的子群是循环的且秩为\(n\)，因此点乘法用到的系数需要模\(n\)操作：\\
+   \begin{array}{rl}
+   a - A & \equiv (B - b) x \pmod{n} \\
+   x & = (a - A)(B - b)^{-1} \bmod{n}
+   \end{array}
+
+   Pollard's rho的操作准则相当简洁： *定义一个\((a, b)\)的伪随机序列* 。该序列可以被用来生成一系列的点\(aP + bQ\)。 因为\(P\)和\(Q\)都是相同循环子群中的元素， *那么，点序列\(aP + bQ\)也是循环的* 。
+
+   这意味着，如果持续生成我们的为随机序列对\((a,b)\)， 迟早我们都可以得到一个循环。那么： *我们将得到一个对\((a,b)\)和另外一个不同的对\((A,B)\)满足\(aP + bQ = AP + BQ\)。同理，有了已知的对的画，我们可以使用上面的等式来找到他们的对数。
+
+   那么问题来了，如何才能有效地监测到一个循环呢？
+
+*** 乌龟和兔子
+    为了检测到循环，我们可以用[[http://en.wikipedia.org/wiki/Pairing_function][对函数]] 来尝试所有的\(a\),\(b\)的值，不过这样我们将得到\(n^2\)个对，我们的算法将变成\(O(n^2)\)， 比暴力破解还糟糕的多。
+
+    不过现在有一个更快的办法： *乌龟和兔子算法* (也被称作Floyd循环寻找算法)。下图便显示了龟兔算法的主旨，这便是Pollard's rho的核心所在：\\
+    #+CAPTION: 我们有一条曲线\(y^2 = x^3 + 2x + 3 \pmod 97\)和点\(P = (3, 6), Q = (80, 87)\)。这些点属于秩为5的循环子群。我们以不同的速度过滤一遍对知道我们找到两个不同值却能生成相同点的对。在这种情况下，我们找到两个点\((3, 3), (2, 0)\)使得我们能够计算出\(x = (3-2)(0-3)^{-1} \bmod 5 = 3\)。这样我们准确地得到了\(Q = 3P\)。
+    #+ATTR_HTML: :alt image :title tortoise and hare algrithm :align center
+    [[file:images/tortoise-hare.gif]]
+
+    开始我们生成为随机序列\((a, b)\)和相应的序列点\(aP + bQ\)。序列堆\((a, b)\)可能并非循环的，不过点却是循环的，因为\(P, Q\)均由相同的基点生成，并且根据子群的性质我们知道点乘法和加法是封闭的。
+
+    现在，开始关注我们的两个小宠物——乌龟和兔子——并使其沿着序列对从左至右以此执行。 *乌龟* （图中的绿点）速度更慢且 *依次读取每一个点* ， *兔子* （对应的红点） 更快且 *每一步都跳跃一个点* 。
+
+    一段时间过后，乌龟和兔子将发现相同的点，却对应着不同的对。为了用等式表达，乌龟发现的对为\((a, b)\)而兔子则对应对\((A, B)\)，这样便有\(aP + bQ = AP + BQ\)。
+
+    如果我们的随机序列用的是一些算法生成的（和静态存储不同），很容易发现该操作需要大约\(O(\log n)\)的 *空间* 。计算器时间复杂度并不容易，不过我们可以从概率上大致证明其时间复杂度为\(O(\sqrt{n})\)，如我们之前提及到的一样。
+
+*** 尝试Pollard's \(\rho\)
+    一样的，我写了一个使用Pollard's rho的方法的[[https://github.com/andreacorbellini/ecc/blob/master/logs/pollardsrho.py][Python 脚本]]。不过该脚本并没有实现最初的Pollard's rho算法，而是做了一些简单的变化（使用了更加有效的方式来生成为随机序列对）。该脚本里有一些很有用的注释，倘若你对该算法有兴趣请读一读。
+
+    该程序，和baby-step giant-step一样，只在一个轻量的曲线上工作，与上一个算法有着相似的输出结果。
+
+*** Pollard's \(\rho\)实践
+    我们说过baby-step giant-step并不能再实际中使用，因为其巨大的内存开销。Pollard's rho，从某种角度来说，只需要很少的内存。那么，其表现如何呢？
+
+    *Certicom在1998年发起了一个[[https://www.certicom.com/index.php/the-certicom-ecc-challenge][挑战]]* ，其椭圆曲线的bit长度从109到359. 直到今天， *只有109bit长度* 的曲线被破解了。最新的进展发生在2004年。引用[[http://en.wikipedia.org/wiki/Discrete_logarithm_records][维基百科]]：
+    #+BEGIN_QUOTE
+    The prize was awarded on 8 April 2004 to a group of about 2600 people represented by Chris Monico. They also used a version of a parallelized Pollard rho method, taking 17 months of calendar time.
+    #+END_QUOTE
+    和我们已经说过的相同, =prime192v1= 只是“最小”的椭圆曲线之一。我们也表示过Pollard's rho的算法复杂度大约为\(O(\sqrt{n})\)。如果我们使用Chris Monico（相同的技术，相同的硬件，相同的机器数量）， 我们需要多久来计算 =prime192v1= 呢？
+    \[
+    17\ \text{months}\ \times \frac{\sqrt{2^{192}}}{\sqrt{2^{109}}} \approx 5 \cdot 10^{13}\ \text{months}
+    \]
+    该数字已经不言自明且使我们对使用相同级数破解离散对数的难度有了很明确的概念。
+
+** Pollard's \(\rho\) vs baby-step giant-step
+   我决定将[[https://github.com/andreacorbellini/ecc/blob/master/logs/babygiantstep.py][baby-step giant-step的脚本]]和[[https://github.com/andreacorbellini/ecc/blob/master/logs/pollardsrho.py][Pollard's rho的脚本]]同[[https://github.com/andreacorbellini/ecc/blob/master/logs/bruteforce.py][暴力破解脚本]] 放在一起组成[[https://github.com/andreacorbellini/ecc/blob/master/logs/comparelogs.py][第四个脚本]] 来对比他们的表现。
+
+   新的脚本使用不同的算法再”小“曲线上计算所有的离散对数并且将其用时打印出来：
+   #+BEGIN_EXAMPLE
+   Curve order: 10331
+   Using bruteforce
+   Computing all logarithms: 100.00% done
+   Took 2m 31s (5193 steps on average)
+   Using babygiantstep
+   Computing all logarithms: 100.00% done
+   Took 0m 6s (152 steps on average)
+   Using pollardsrho
+   Computing all logarithms: 100.00% done
+   Took 0m 21s (138 steps on average)
+   #+END_EXAMPLE
+   同我们希望的一样，暴力破解相对于其他两个算法来说的确是极慢的。Baby-step giant-step最快，而Pollard's rho也比其慢三倍（尽管其用了更少的空间和尝试了更少的数字）。
+
+   我们再看一眼算法的执行步数：暴力破解平均运行了5192步来计算对数。5193差不多正好等于10331/2(曲线秩的一半)。Baby-step giant-step和Pollard's rho分别用了152和138步，二者都非常接近10331的平方根(101.64)。
+
+** 最后的思考
+   在讨论这些算法的时候，我列举出了许多的数字。不过，阅读他们却需要认真和仔细：算法可以通过众多方式来优化；硬件性能可以提升，甚至专用的硬件设施也可以被设计制造出来。
+
+   尽管今天解决该问题不切实际，却并不意味着未来无法破解。不过，同样也并不表示更好的算法是存在的（请再一次记住，我们并没有严格的数学证明来表明离散对数的复杂度）。
+
+** Shor's 算法
+   如果当今的技术无法解决，那么未来的技术呢？好，事情似乎有些令人不安：现在有一个[[https://en.wikipedia.org/wiki/Quantum_algorithm][量子算法]] 可以满足离散对数在多项式时间内被攻破：[[https://en.wikipedia.org/wiki/Shor%27s_algorithm][Shor 算法]]。其时间复杂度为\(O((\log n)^3)\)，空间复杂度为\(O(\log{n})\)。
+
+   量子算法的有效性是基于状态叠加的基础上。在传统的计算机上，其内存单元（比如说比特）为0或者1。并不存在二者的中间态。换句话说，量子计算机(quantum computers)的内存单元（被叫做qubits）却打破了这一常规：他们并没有真正意义上的0或者1直到他们被计算。状态叠加并不意味着qubit可以同时为0或者1（这经常被网络所提及），只是表示当我们计算或者衡量qubit的时候，我们有在某种概率下得到状态0或者另一概率得到状态1。量子算法则是通过修改每个qubit的该类来实现其有效性。
+
+   这意味着只需要很少的qubits，我们便可以同时处理大量的信息。因此，比如说，我们可以告诉一台计算机一个\(x\)满足在0到\(n - 1\)平均分布。这便使得我们只需要\(\log n\)而非\(n\log n\)bits的数据。然后，我们可以让量子计算机执行标量乘法\(xP\)，我们将会得到符合平均分布于\(0P, \dots, (n-1)P\)的点——这表示，如果我们现在获取我们的qubit，我们将有\(1/n\)的概率获取到\(0P\)到\((n-1)P\)的点。
+
+   这只是让你对下状态叠加的威力有个感性认识。Shor算法并非准确得如我上诉方式执行，而是复杂得多。其复杂的原因在于，当我们同时”模拟“\(n\)个状态，我们需要将这么多的状态减少到有限的几个，以为我们仅仅需要的是一个答案（我们只需要一个正确的对数而不是众多可能的错误对数）。
+
+* ECC和RSA
+  现在让我们忘了量子计算，其离我们多远都还是一个值得商榷的问题。接下来我要回答的问题是： *为什么在RSA效果明显的情况下依然要被椭圆曲线困扰* 。
+
+  NIST有一个快速明了的答案，提供了一个有着相同安全强度的情况下，[[https://www.nsa.gov/business/programs/elliptic_curve.shtml][RSA和ECC密钥大小对比的表格]]。
+  #+CAPTION: RSA与ECC密钥大小对比
+  |--------------------+--------------------|
+  | RSA Key size(bits) | ECC Key size(bits) |
+  |--------------------+--------------------|
+  |               1024 |                160 |
+  |               2048 |                224 |
+  |               3072 |                256 |
+  |               7680 |                384 |
+  |              15360 |                521 |
+  |--------------------+--------------------|
+  我们注意到RSA的密钥大小同ECC密钥大小并非构成线性关系（换句话说：如果我们将RSA密钥扩展一倍，我们并不需要将ECC的长度同样扩展一倍）。这个表格告诉我们的不仅仅ECC只需要用更小的空间，而且其钥匙的生成和签名速度更快。
+
+  不过为什么会有这个结果？答案是，计算离散对数的快速算法是Pollard's rho和baby-step giant-step算法，而RSA现在有更快的破解算法。不过一个特列，[[https://en.wikipedia.org/wiki/General_number_field_sieve][常用有限域筛]]： 一个可以被用来计算离散对数的的整数分解的算法。该算法是目前来说整数分解最快的算法。
+
+  所有被应用在其他加密系统的算法都基于了模数运算，比如DSA、D-H和ElGamal。
+
+** NSA的潜在威胁
+  现在才是最难的部分。目前为止，我们讨论了算法和数学。现在，是时候该讨论讨论人，以及事情正在变得复杂。
+
+  如果你还记得，在上文我们说到过有一类弱曲线，且为了解决可疑来源的曲线信任问题我们使用了随机生成的种子来获取我们的范围参数。如果我我们去看一眼NIST的标准曲线，我们会发现他们都是严格随机的。
+
+  如果我们阅读维基百科[[http://en.wikipedia.org/wiki/Nothing_up_my_sleeve_number]["nothing up my sleeve"]]，我们会发现：
+  - MD5的随机数来源于整数的正弦值；
+  - Blowfish的随机数来源与\(\pi\)的第一个数字；
+  - RC5的随机数来源于\(e\)和黄金比例。
+
+  这些数字都是随机的因为他们服从平均分布。当然，他们也是值得信赖的因为已经被验证过了。
+
+  不过现在问题是： *NIST的随机数从何而来* ？答案是，很遗憾：我们不知道。这些数据根本没有被验证过。
+
+  *NIST完全有可能发现了一个”相当多”的一类弱曲线并尝试了生成多次种子知道找到可以被符合条件的曲线* 。我无法回答这个问题，不过这是在法律上来说非常重要的问题。我们知道NIST曾经成功地发布了至少一个[[http://en.wikipedia.org/wiki/Dual_EC_DRBG][易受攻击的随机数生成器]] （一个基于椭圆曲线的很奇怪的生成器）。也许他们也成功发布了一系列的若曲线，不过我们如何得知？我们并不能。
+
+  理解“严格随机”与“安全”并不等价是很重要的。不管离散对数问题如何难以解决。或者该密码长度有多长，如果算法被本身有问题，我们无能为力。
+
+  相对这一问题来说，RSA是赢家，因为他并不会因为特殊的范围参数而可能被弱化。RSA(同其他模数算法系统一样）可能并非一个好的选择入伙我们不能信任权威机构和信任我们自己的范围参数的话。此时，你可能会问：对，TLS使用的是NIST的曲线。如果你检查下[[https://google.com]]， 你会看到连接使用的是ECDHE和ECDSA，其验证使用的曲线是 =prime256v1= (也就是 =secp256p1= ）。
+
+* That's all
+  我希望你能喜欢一系列。我的目标是让你对如今的椭圆曲线密码学有一个基本的知识，了解其术语和约定。如果我打到了我的目标，现在你应该能够理解ECC-based的加密系统了，并且你可以去阅读“较为深奥”的文档了。再写这个系列的时候，我用了简单术语跳过了许多部分，不过我觉得我这么做你可能还没有理解web所需要提供的内容。我相信我已经找到了简单和完整之间的好的平衡点。
+
+  注意，仅仅依靠读这系列文章你并不能够实现一个ECC的加密系统：安全需要我们知道众多细微但是重要的细节。记住[[http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/#random-curves][Smart 攻击]]和[[http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/#ecdsa-k][Sony 的错误]] —— 这只是两个告诉你构建一个不安全系统算法是多么容易被破解。
+
+  因此，如果你希望更深刻地理解ECC的世界，该怎么去学习呢？
+
+  首先，我们看到了Weierstrass曲线再素数的有限域，不过你需要知道该曲线在其他曲线和有限域，特别是：
+  - *基于二元有限域的Koblitz曲线* 。这是基于\(2^m\)(\(m\)是素数)个元素有限域的满足表达式 \(y^2 + xy = x^3 + ax^2 + 1\)(\(a\)是0或者1)的曲线。他们循序特殊的点加法和标量乘法。标准的Koblitz曲线的例子是 =nistk163=, =nistk283= 和 =nistk571= （三条基于163，283和571有限域的曲线）
+  - *二元曲线* 。他们与Koblitz曲线相当类似，其形式为\(x^2 + xy = x^3 + x^2 + b\)(\(b\)是随机数生成的一个整数\)。如同其名字表示，贰圆曲线被限定再二元有限域中。标准二元曲线的例子是 =nistb163=, =nistb283= 和 =nistb571=。有必要提及的是现在有越来越多的担忧表明Koblitz和二元曲线可能不如素数曲线安全。
+  - *Edwards曲线* ，形式是\(x^2 + y^2 = 1 + d x^2 y^2\)(\(d\)是0或1)。特别有趣的是在该曲线上，不仅仅点加法和标量乘法速度很快，而且其点加法的公式是一样的，在任何情况下(\(P \ne Q, P = Q, P = -Q, \dots \)。该性质降低了side-channel攻击的可能性，通过计算标量乘法的时间和根据其耗时来猜测系数。Edwards曲线相对较新(都是在2007年发表的)，并没有如Certicom或者NIST发布了关于他们的标准。
+  - *Curve25519* 和 *Ed25519* 是两个分别为ECDH和ECDSA变种设计的特殊曲线。 同Edwards曲线类似，这两条曲线快速切能防御side-channel攻击。同Edwards曲线一样，暂时并没有标准切没有在任何流行的软件中见到他们的身影(出了OpenSSH，其再2014念咒开始支持Ed25519密钥对)。
+
+  如果你对ECC的实现细节高兴去，我建议你去读一读OpenSSL和GnuTLS的源代码。
+
+  最后，如果你对数学内容感兴趣，而非密码学或者算法效率，你有必要知道下列内容：
+  - 椭圆曲线是 *algebraic varieties with genus one.* (一类代数多样性？)
+  - *射影几何* 的上无限远点且能用 *同类坐标* 来表示 （尽管射影集合的其他性质和功能对于椭圆曲线密码学并需要）
+
+  别忘了学习 *有限域* 和 *域论* 。
+
+  这是一些如果你有兴趣继续深入下去需要去查找的一些关键词。
+
+  好了，该堆该系列作最后总结了。感谢你们所有的友好评论、tweets和邮件。有许多人问我是否会继续写一些相关主题的文章，我只能说我也不确定。我接受这些建议但是不作承诺。
+
+  非常感您的阅读，下次再见！
+
